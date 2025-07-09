@@ -9,6 +9,7 @@ from .food101 import Food101
 from .oxford_flowers import OxfordFlowers
 from .stanford_cars import StanfordCars
 from .imagenet import ImageNet
+from .pigs import PIGS
 
 
 dataset_list = {
