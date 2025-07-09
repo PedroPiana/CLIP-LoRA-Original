@@ -10,7 +10,7 @@ template = ['a photo of a pig {}.']
 
 
 
-class EuroSAT(DatasetBase):
+class PIGS(DatasetBase):
 
     dataset_dir = 'pigs'
 
