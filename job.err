@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/lustre03/project/6036820/pedro36/workspace/CLIP-LoRA-Original/main.py", line 4, in <module>
+    from datasets import build_dataset
+  File "/lustre03/project/6036820/pedro36/workspace/CLIP-LoRA-Original/datasets/__init__.py", line 26, in <module>
+    "pigs": PIGS
+NameError: name 'PIGS' is not defined
