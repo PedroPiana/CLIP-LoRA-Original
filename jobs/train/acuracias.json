@@ -1,0 +1,50 @@
+{
+  "CLIP-LoRA_pigs_2shots_4seed.out": {
+    "final": 74.3
+  },
+  "CLIP-LoRA_pigs_4shots_2seed.out": {
+    "final": 78.09
+  },
+  "CLIP-LoRA_pigs_8shots_2seed.out": {
+    "final": 82.21
+  },
+  "CLIP-LoRA_pigs_16shots_2seed.out": {
+    "final": 94.07
+  },
+  "CLIP-LoRA_pigs_1shots_2seed.out": {
+    "zero_shot": 54.53,
+    "final": 65.73
+  },
+  "CLIP-LoRA_pigs_2shots_1seed.out": {
+    "final": 61.78
+  },
+  "CLIP-LoRA_pigs_4shots_1seed.out": {
+    "final": 84.35
+  },
+  "CLIP-LoRA_pigs_16shots_4seed.out": {
+    "final": 94.4
+  },
+  "CLIP-LoRA_pigs_8shots_4seed.out": {
+    "final": 94.56
+  },
+  "CLIP-LoRA_pigs_1shots_4seed.out": {
+    "zero_shot": 54.53,
+    "final": 59.97
+  },
+  "CLIP-LoRA_pigs_1shots_1seed.out": {
+    "zero_shot": 54.53,
+    "final": 65.57
+  },
+  "CLIP-LoRA_pigs_2shots_2seed.out": {
+    "final": 66.89
+  },
+  "CLIP-LoRA_pigs_4shots_4seed.out": {
+    "final": 75.95
+  },
+  "CLIP-LoRA_pigs_16shots_1seed.out": {
+    "final": 96.87
+  },
+  "CLIP-LoRA_pigs_8shots_1seed.out": {
+    "final": 87.64
+  }
+}
