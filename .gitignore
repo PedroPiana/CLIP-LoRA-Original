@@ -1,0 +1,30 @@
+# Ambientes virtuais
+env/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.so
+
+# Conda environments (opcional se estiver em subpasta)
+*.conda
+*.egg-info/
+.conda/
+conda-meta/
+
+# Arquivos VS Code
+.vscode/
+
+# Arquivos temporários e caches
+*.log
+*.sqlite3
+*.db
+.DS_Store
+
+# Jupyter e Python bytecode
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+
+# Arquivos de ambiente
+.env
