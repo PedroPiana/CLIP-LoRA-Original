@@ -3,7 +3,7 @@
 #SBATCH --output=job.out
 #SBATCH --error=job.err
 #SBATCH --mem=32G
-#SBATCH --time=00:30:00
+#SBATCH --time=00:10:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gpus-per-node=1
@@ -21,5 +21,5 @@ PYTHONWARNINGS="ignore" python3 main.py \
 --seed 1 \
 --shots 1 \
 --save_path weights \
---filename "CLIP-LoRA_PIGS"
+--filename "teste"
     
