@@ -40,6 +40,8 @@ def get_arguments():
     parser.add_argument('--filename', default='lora_weights', help='file name to save the lora weights (.pt extension will be added)')
     
     parser.add_argument('--eval_only', default=False, action='store_true', help='only evaluate the LoRA modules (save_path should not be None)')
+
+    parser.add_argument('--image_path', default=None, type=str, help='image_path to run inference in 1 image')
     args = parser.parse_args()
 
     return args
