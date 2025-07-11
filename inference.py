@@ -54,15 +54,14 @@ inference(args, image_tensor)
 to run inference:
 
 python inference.py \
-  --root_path /home/pedro36/projects/def-leszek/pedro36/datasets/DATA \
+  --root_path C:/Users/Pedro/Downloads/DATA \
   --dataset pigs \
   --seed 1 \
   --shots 1
   --save_path weights \
-  --image_path "/home/pedro36/projects/def-leszek/pedro36/workspace/CLIP-LoRA-Original/cropped_image_6359.jpg" \
-  --filename "CLIP-LoRA_pigs"
+  --image_path "C:/Users/Pedro/Downloads/CLIP-LoRA-Original/cropped_image_6359.jpg" \
+  --filename "CLIP-LoRA_PIGS"
 
-
-python inference.py --root_path /home/pedro36/projects/def-leszek/pedro36/datasets/DATA --dataset pigs --seed 1 --shots 1 --save_path weights --image_path "/home/pedro36/projects/def-leszek/pedro36/workspace/CLIP-LoRA-Original/cropped_image_6359.jpg" --filename "CLIP-LoRA_pigs"
+python inference.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 1 --save_path weights --image_path "C:/Users/Pedro/Downloads/CLIP-LoRA-Original/cropped_image_6359.jpg" --filename "CLIP-LoRA_PIGS" 
 '''
 
