@@ -47,7 +47,7 @@ PYTHONWARNINGS="ignore" python3 /home/pedro36/projects/def-leszek/pedro36/worksp
 --dataset {dataset} \\
 --seed {seed} \\
 --shots {shots} \\
---save_path weights \\
+--save_path ../../weights \\
 --filename "{method}_{dataset}"
     """
 
