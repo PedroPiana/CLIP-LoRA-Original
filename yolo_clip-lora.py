@@ -1,36 +1,49 @@
 from ultralytics import YOLO
-import torch
-import clip
-import os
 import cv2
 from PIL import Image
-import numpy as np
+import torch
+import torchvision.transforms as transforms
+import clip
+from datasets import build_dataset
+from PIL import Image
+from loralib.utils import apply_lora, load_lora
 from utils import *
 from run_utils import *
-
-from loralib.utils import mark_only_lora_as_trainable, apply_lora, get_lora_parameters, lora_state_dict, save_lora, load_lora
-from loralib import layers as lora_layers
-
-#python yolo_clip-lora.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 16 --save_path weights --filename "CLIP-LoRA_PIGS" 
-
+from lora import lora_inference
+import os
+        
 
 args = get_arguments()
+
+
+set_random_seed(args.seed)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# CLIP
+clip_model, preprocess = clip.load(args.backbone)
+clip_model.eval()
+clip_model = clip_model.to(device)
+
+# LoRA
+list_lora_layers = apply_lora(args, clip_model)
+load_lora(args, list_lora_layers)
+
+# Prepare dataset
+print("Preparing dataset.")
+dataset = build_dataset(args.dataset, args.root_path, args.shots, preprocess)
+
+# Usa o mesmo preprocess do CLIP
+preprocess = transforms.Compose([
+            transforms.RandomResizedCrop(size=224, scale=(0.08, 1), interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.48145466, 0.4578275, 0.40821073), std=(0.26862954, 0.26130258, 0.27577711))
+        ])
 
 # carregar modelo YOLO e CLIP
 yolo_model_path = r"C:\Users\Pedro\Downloads\PIGS_L_S\runs_laying_standing_bboxes\detect\train\weights\best.pt"
 image_dir = r"C:\Users\Pedro\Downloads\PIGS_L_S\laying_standing.v2i.yolov8\valid\images"
 label_dir = r"C:\Users\Pedro\Downloads\PIGS_L_S\laying_standing.v2i.yolov8\valid\labels"
-clip_classes = ["a photo of a pig standing", "a photo of a pig laying"]  # 0 = standing, 1 = laying
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-clip_model, preprocess = clip.load("ViT-B/32", device=device)
-text_tokens = clip.tokenize(clip_classes).to(device)
-
-clip_model = clip_model.to(device)
-list_lora_layers = apply_lora(args, clip_model)
-
-load_lora(args, list_lora_layers)
-clip_model = clip_model.to(device)
 
 
 # métricas
@@ -71,18 +84,24 @@ for image_name in os.listdir(image_dir):
         crop = image_pil.crop((x1, y1, x2, y2))
         crop_tensor = preprocess(crop).unsqueeze(0).to(device)
 
-        with torch.no_grad():
-            image_features = clip_model.encode_image(crop_tensor)
-            text_features = clip_model.encode_text(text_tokens)
-            logits = (image_features @ text_features.T).softmax(dim=-1)
-            pred = int(logits.argmax().item())
+
+        template = lora_inference(args, clip_model, crop_tensor, dataset)
 
         total += 1
-        if pred == cls_id:
+        pred = False
+        if "laying" in template and cls_id == 0:
             acertos += 1
+            pred = True
+        elif "standing" in template and cls_id == 1:
+            acertos += 1
+            pred = True
 
-        print(f"{image_name} - bbox {i}: GT={cls_id}, Pred={pred}, {'✓' if pred==cls_id else '✗'}")
+
+        print(f"{image_name} - bbox {i}: GT={cls_id}, {'✓' if pred else '✗'}")
 
 # imprimir acurácia final
 acc = acertos / total if total > 0 else 0
-print(f"\nAcurácia CLIP nos crops GT: {acertos}/{total} = {acc:.2%}")
+print(f"\nAcurácia CLIP-LoRA nos crops GT: {acertos}/{total} = {acc:.2%}")
+
+
+#python yolo_clip-lora.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 16 --save_path weights --filename "CLIP-LoRA_pigs" 
