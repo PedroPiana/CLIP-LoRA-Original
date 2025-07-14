@@ -192,12 +192,11 @@ def load_lora(args, list_lora_layers):
     if not os.path.exists(load_path):
         raise FileNotFoundError(f'File {load_path} does not exist.')
 
-    if args.image_path != None :
-        loaded_data = torch.load(load_path, map_location=torch.device("cpu"))
-    else:
+    # Corrigido: sempre verifica se CUDA está disponível para definir map_location
+    if torch.cuda.is_available():
         loaded_data = torch.load(load_path)
-
-        
+    else:
+        loaded_data = torch.load(load_path, map_location=torch.device("cpu"))
 
     metadata = loaded_data['metadata']
     if metadata['r'] != args.r:

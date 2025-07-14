@@ -12,28 +12,30 @@ def cls_acc(output, target, topk=1):
 
 
 def clip_classifier(classnames, template, clip_model):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     with torch.no_grad():
         clip_weights = []
         for classname in classnames:
             # Tokenize the prompts
             classname = classname.replace('_', ' ')
             texts = [t.format(classname) for t in template]
-            texts = clip.tokenize(texts).cuda()
+            texts = clip.tokenize(texts).to(device)
             class_embeddings = clip_model.encode_text(texts)
             class_embeddings /= class_embeddings.norm(dim=-1, keepdim=True)
             class_embedding = class_embeddings.mean(dim=0)
             class_embedding /= class_embedding.norm()
             clip_weights.append(class_embedding)
-        clip_weights = torch.stack(clip_weights, dim=1).cuda()
+        clip_weights = torch.stack(clip_weights, dim=1).to(device)
         
     return clip_weights
 
 
 def pre_load_features(clip_model, loader):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     features, labels = [], []
     with torch.no_grad():
         for i, (images, target) in enumerate(tqdm(loader)):
-            images, target = images.cuda(), target.cuda()
+            images, target = images.to(device), target.to(device)
             image_features = clip_model.encode_image(images)
             image_features /= image_features.norm(dim=-1, keepdim=True)
             features.append(image_features.cpu())

@@ -51,3 +51,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+#python3 main.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 16 --save_path weights --filename "CLIP-LoRA_pigs"
+
+#python yolo_clip-lora.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 16 --save_path weights --filename "CLIP-LoRA_pigs" 
