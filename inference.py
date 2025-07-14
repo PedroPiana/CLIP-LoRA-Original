@@ -2,42 +2,35 @@ import torch
 import torchvision.transforms as transforms
 import clip
 from datasets import build_dataset
-from datasets.utils import build_data_loader
 from PIL import Image
-
-
+from loralib.utils import apply_lora, load_lora
 from utils import *
 from run_utils import *
-from lora import run_lora_inference, lora_inference
-
-
-def inference(args, image):
-
-    
-    set_random_seed(args.seed)
-    
-    # CLIP
-    clip_model, preprocess = clip.load(args.backbone)
-    clip_model.eval()
-    logit_scale = 100
-
-    # Prepare dataset
-    print("Preparing dataset.")
+from lora import lora_inference
         
-    dataset = build_dataset(args.dataset, args.root_path, args.shots, preprocess)
-    
-
-    template = run_lora_inference(args, clip_model, image, dataset)
-
-    print(f"Best template for the image: {template}")
-
 
 args = get_arguments()
 
 img_path = args.image_path
 image = Image.open(img_path).convert("RGB")
 
-# Use o mesmo preprocess do CLIP
+set_random_seed(args.seed)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# CLIP
+clip_model, preprocess = clip.load(args.backbone)
+clip_model.eval()
+clip_model = clip_model.to(device)
+
+# LoRA
+list_lora_layers = apply_lora(args, clip_model)
+load_lora(args, list_lora_layers)
+
+# Prepare dataset
+print("Preparing dataset.")
+dataset = build_dataset(args.dataset, args.root_path, args.shots, preprocess)
+
+# Usa o mesmo preprocess do CLIP
 preprocess = transforms.Compose([
             transforms.RandomResizedCrop(size=224, scale=(0.08, 1), interpolation=transforms.InterpolationMode.BICUBIC),
             transforms.RandomHorizontalFlip(p=0.5),
@@ -47,21 +40,12 @@ preprocess = transforms.Compose([
 
 image_tensor = preprocess(image).unsqueeze(0)  # Adiciona batch dimension
 
-# Rode a inferência
-inference(args, image_tensor)
 
-'''
-to run inference:
 
-python inference.py \
-  --root_path C:/Users/Pedro/Downloads/DATA \
-  --dataset pigs \
-  --seed 1 \
-  --shots 1
-  --save_path weights \
-  --image_path "C:/Users/Pedro/Downloads/CLIP-LoRA-Original/cropped_image_6359.jpg" \
-  --filename "CLIP-LoRA_pigs"
+template = lora_inference(args, clip_model, image_tensor, dataset)
+print(f"Best template for the image: {template}")
 
-python inference.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 1 --save_path weights --image_path "C:/Users/Pedro/Downloads/CLIP-LoRA-Original/cropped_image_6359.jpg" --filename "CLIP-LoRA_pigs" 
-'''
+
+
+#python inference.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 1 --save_path weights --image_path "C:/Users/Pedro/Downloads/CLIP-LoRA-Original/cropped_image_6359.jpg" --filename "CLIP-LoRA_pigs" 
 

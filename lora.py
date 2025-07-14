@@ -160,10 +160,3 @@ def lora_inference(args, clip_model, image, dataset):
     return best_template.format(best_classname.replace('_', ' '))
 
 
-def run_lora_inference(args, clip_model, image, dataset):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    clip_model = clip_model.to(device)
-    list_lora_layers = apply_lora(args, clip_model)
-    load_lora(args, list_lora_layers)
-    best_template = lora_inference(args, clip_model, image, dataset)
-    return best_template
