@@ -24,7 +24,7 @@ dataset_list = {
                 "oxford_flowers": OxfordFlowers,
                 "stanford_cars": StanfordCars,
                 "imagenet": ImageNet,
-		"pigs": PIGS
+		        "pigs": PIGS
                 }
 
 
