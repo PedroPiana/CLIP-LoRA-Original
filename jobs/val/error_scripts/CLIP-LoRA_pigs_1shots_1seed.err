@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/pedro36/links/projects/def-leszek/pedro36/workspace/CLIP-LoRA-Original/main.py", line 53, in <module>
+    main()
+  File "/home/pedro36/links/projects/def-leszek/pedro36/workspace/CLIP-LoRA-Original/main.py", line 50, in main
+    run_lora(args, clip_model, logit_scale, dataset, train_loader, val_loader, test_loader)
+  File "/lustre09/project/6036820/pedro36/workspace/CLIP-LoRA-Original/lora.py", line 65, in run_lora
+    load_lora(args, list_lora_layers)
+  File "/lustre09/project/6036820/pedro36/workspace/CLIP-LoRA-Original/loralib/utils.py", line 193, in load_lora
+    raise FileNotFoundError(f'File {load_path} does not exist.')
+FileNotFoundError: File /home/pedro36/links/projects/def-leszek/pedro36/workspace/CLIP-LoRA-Original/weights/vitb16/pigs/-1shots/seed1/CLIP-LoRA_pigs.pt does not exist.

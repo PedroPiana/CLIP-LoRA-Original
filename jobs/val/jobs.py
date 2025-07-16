@@ -7,7 +7,7 @@ methods = [
 datasets = [
 "pigs"
 ]
-shots_list = [1, 2, 4, 8, 16]
+shots_list = [1]
 seeds = [1, 2, 4]
 
 job_scripts_dir = "job_scripts"
@@ -30,7 +30,7 @@ for method, dataset, shots, seed in itertools.product(methods, datasets, shots_l
 #SBATCH --output={logs_dir}/{job_name}.out
 #SBATCH --error={error_dir}/{job_name}.err
 #SBATCH --mem=32G
-#SBATCH --time=00:30:00
+#SBATCH --time=00:10:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gpus-per-node=1
@@ -42,13 +42,13 @@ pip install --no-index --upgrade pip
 pip install --no-index torch torchvision torchaudio ftfy scipy regex tqdm gdown pandas
 export TQDM_DISABLE=1
 
-PYTHONWARNINGS="ignore" python3 main.py \\
---root_path /home/pedro36/projects/def-leszek/pedro36/datasets/DATA \\
+PYTHONWARNINGS="ignore" python3 /home/pedro36/links/projects/def-leszek/pedro36/workspace/CLIP-LoRA-Original/main.py \\
+--root_path /home/pedro36/links/projects/def-leszek/pedro36/datasets/DATA \\
 --dataset {dataset} \\
 --seed {seed} \\
 --shots {shots} \\
 --eval_only \\
---save_path weights \\
+--save_path /home/pedro36/links/projects/def-leszek/pedro36/workspace/CLIP-LoRA-Original/weights \\
 --filename "{method}_{dataset}"
     """
 
