@@ -30,7 +30,7 @@ for method, dataset, shots, seed in itertools.product(methods, datasets, shots_l
 #SBATCH --output={logs_dir}/{job_name}.out
 #SBATCH --error={error_dir}/{job_name}.err
 #SBATCH --mem=32G
-#SBATCH --time=02:00:00
+#SBATCH --time=00:30:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gpus-per-node=1
