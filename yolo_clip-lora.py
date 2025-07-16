@@ -141,7 +141,7 @@ except (FileNotFoundError, json.JSONDecodeError):
     results = {}
 
 # Gera chave única para cada script/execução
-key = f"CLIP-LoRA_crops_YOLO_{dataset}_shots{args.shots}_seed{args.seed}"
+key = f"CLIP-LoRA_crops_YOLO_shots{args.shots}_seed{args.seed}"
 results[key] = {
     "acertos": acertos,
     "total": total,

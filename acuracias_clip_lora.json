@@ -4,7 +4,7 @@
         "total": 25,
         "acuracia": 0.4
     },
-    "CLIP-LoRA_crops_YOLO_<datasets.pigs.PIGS object at 0x0000021D31B35C60>_shots16_seed1": {
+    "CLIP-LoRA_crops_YOLO_shots16_seed1": {
         "acertos": 23,
         "total": 25,
         "acuracia": 0.92
