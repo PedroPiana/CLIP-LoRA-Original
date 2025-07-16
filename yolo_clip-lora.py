@@ -10,6 +10,7 @@ from utils import *
 from run_utils import *
 from lora import lora_inference
 import os
+import json
 
 
 args = get_arguments()
@@ -125,11 +126,31 @@ for image_name in os.listdir(image_dir):
             acertos += 1
             pred = True
 
-        print(f"{image_name} - bbox {i}: GT={gt_cls}, {'✓' if pred else '✗'} (IOU={best_iou:.2f})")
+        print(f"{image_name} - bbox {i}: GT={gt_cls}, {'✓' if pred else 'X'} (IOU={best_iou:.2f})")
 
 # Resultado final
 acc = acertos / total if total > 0 else 0
 print(f"\nAcurácia CLIP-LoRA nos crops YOLO: {acertos}/{total} = {acc:.2%}")
 
+# Salvar resultado em JSON (acumula resultados de diferentes scripts)
+result_path = "acuracias_clip_lora.json"
+try:
+    with open(result_path, "r") as f:
+        results = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    results = {}
 
-#python yolo_clip-lora.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 16 --save_path weights --filename "CLIP-LoRA_pigs" 
+# Gera chave única para cada script/execução
+key = f"CLIP-LoRA_crops_YOLO_{dataset}_shots{args.shots}_seed{args.seed}"
+results[key] = {
+    "acertos": acertos,
+    "total": total,
+    "acuracia": acc
+}
+
+with open(result_path, "w") as f:
+    json.dump(results, f, indent=4)
+print(f"Acurácia salva em {result_path}")
+
+
+#python yolo_clip-lora.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 16 --save_path weights --filename "CLIP-LoRA_pigs"

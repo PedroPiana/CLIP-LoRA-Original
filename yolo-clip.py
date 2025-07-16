@@ -5,6 +5,7 @@ import os
 import cv2
 from PIL import Image
 import numpy as np
+import json
 
 # carregar modelo YOLO e CLIP
 yolo_model_path = r"C:\Users\Pedro\Downloads\PIGS_L_S\runs_laying_standing_bboxes\detect\train\weights\best.pt"
@@ -64,8 +65,30 @@ for image_name in os.listdir(image_dir):
         if pred == cls_id:
             acertos += 1
 
-        print(f"{image_name} - bbox {i}: GT={cls_id}, Pred={pred}, {'✓' if pred==cls_id else '✗'}")
+        print(f"{image_name} - bbox {i}: GT={cls_id}, Pred={pred}, {'✓' if pred==cls_id else 'X'}")
 
 # imprimir acurácia final
 acc = acertos / total if total > 0 else 0
 print(f"\nAcurácia CLIP nos crops GT: {acertos}/{total} = {acc:.2%}")
+
+# Salvar resultado em JSON (acumula resultados de diferentes scripts)
+result_path = "acuracias_clip_lora.json"
+try:
+    with open(result_path, "r") as f:
+        results = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    results = {}
+
+# Gera chave única para cada script/execução
+key = f"CLIP_crops_YOLO"
+results[key] = {
+    "acertos": acertos,
+    "total": total,
+    "acuracia": acc
+}
+
+with open(result_path, "w") as f:
+    json.dump(results, f, indent=4)
+print(f"Acurácia salva em {result_path}")
+
+#python yolo-clip.py 
