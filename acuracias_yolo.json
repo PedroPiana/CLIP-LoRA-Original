@@ -1,0 +1,7 @@
+{
+    "YOLO": {
+        "acertos": 24,
+        "total": 25,
+        "acuracia": 0.96
+    }
+}

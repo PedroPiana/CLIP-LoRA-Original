@@ -5,8 +5,13 @@
         "acuracia": 0.4
     },
     "CLIP-LoRA_crops_YOLO_shots16_seed1": {
-        "acertos": 23,
+        "acertos": 24,
         "total": 25,
-        "acuracia": 0.92
+        "acuracia": 0.96
+    },
+    "CLIP-LoRA_crops_YOLO_shots1_seed1": {
+        "acertos": 10,
+        "total": 25,
+        "acuracia": 0.4
     }
 }

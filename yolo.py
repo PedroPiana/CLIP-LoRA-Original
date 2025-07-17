@@ -1,48 +1,15 @@
 from ultralytics import YOLO
 import cv2
 from PIL import Image
-import torch
-import torchvision.transforms as transforms
-import clip
-from datasets import build_dataset
-from loralib.utils import apply_lora, load_lora
-from utils import *
-from run_utils import *
-from lora import lora_inference
 import os
 import json
-
-
-args = get_arguments()
-set_random_seed(args.seed)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# CLIP
-clip_model, preprocess_clip = clip.load(args.backbone)
-clip_model.eval()
-clip_model = clip_model.to(device)
-
-# LoRA
-list_lora_layers = apply_lora(args, clip_model)
-load_lora(args, list_lora_layers)
-
-# Dataset para CLIP-LoRA
-print("Preparing dataset.")
-dataset = build_dataset(args.dataset, args.root_path, args.shots, preprocess_clip)
-
-# Transformação padrão
-preprocess = transforms.Compose([
-    transforms.Resize((224, 224), interpolation=transforms.InterpolationMode.BICUBIC),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=(0.48145466, 0.4578275, 0.40821073),
-                         std=(0.26862954, 0.26130258, 0.27577711))
-])
 
 # Caminhos
 yolo_model_path = r"C:\Users\Pedro\Downloads\PIGS_L_S\runs_laying_standing_bboxes\detect\train\weights\best.pt"
 image_dir = r"C:\Users\Pedro\Downloads\PIGS_L_S\laying_standing.v2i.yolov8\valid\images"
 label_dir = r"C:\Users\Pedro\Downloads\PIGS_L_S\laying_standing.v2i.yolov8\valid\labels"
 
+# Inicializa modelo
 yolo = YOLO(yolo_model_path)
 
 # Métricas
@@ -60,7 +27,7 @@ def iou(boxA, boxB):
     boxBArea = (boxB[2] - boxB[0]) * (boxB[3] - boxB[1])
     return interArea / float(boxAArea + boxBArea - interArea + 1e-6)
 
-# Loop de avaliação
+# Loop pelas imagens
 for image_name in os.listdir(image_dir):
     if not image_name.endswith(".jpg"):
         continue
@@ -70,7 +37,7 @@ for image_name in os.listdir(image_dir):
     if not os.path.exists(label_path):
         continue
 
-    # Carrega ground truth do YOLO
+    # Carrega GT
     with open(label_path, "r") as f:
         gt_boxes = []
         for line in f:
@@ -83,66 +50,57 @@ for image_name in os.listdir(image_dir):
     # Carrega imagem
     image = cv2.imread(img_path)
     h, w = image.shape[:2]
-    image_pil = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
     # Predição YOLO
     pred_yolo = yolo.predict(img_path, verbose=False)[0]
+
+    matched_gt = [False] * len(gt_boxes)  # controle de matching
+
     for i, det in enumerate(pred_yolo.boxes.data):
-        x1, y1, x2, y2, conf, class_id = det.cpu().numpy()
+        x1, y1, x2, y2, conf, pred_cls = det.cpu().numpy()
         x1, y1 = max(0, int(x1)), max(0, int(y1))
         x2, y2 = min(w, int(x2)), min(h, int(y2))
 
-        # Faz crop da bbox
-        crop = image_pil.crop((x1, y1, x2, y2))
-        crop_tensor = preprocess(crop).unsqueeze(0).to(device)
-
-        # Encontra melhor bbox da label original (GT)
         best_iou = 0
-        gt_cls = None
-        for gt in gt_boxes:
+        best_gt_idx = -1
+
+        for idx, gt in enumerate(gt_boxes):
+            if matched_gt[idx]:
+                continue
             cx, cy, bw, bh = gt["bbox"]
             gx1 = int((cx - bw / 2) * w)
             gy1 = int((cy - bh / 2) * h)
             gx2 = int((cx + bw / 2) * w)
             gy2 = int((cy + bh / 2) * h)
             current_iou = iou((x1, y1, x2, y2), (gx1, gy1, gx2, gy2))
+
             if current_iou > best_iou:
                 best_iou = current_iou
-                gt_cls = gt["cls_id"]
+                best_gt_idx = idx
 
-        # Pula se nenhuma GT razoável encontrada
-        if gt_cls is None or best_iou < 0.3:
-            continue
-
-        # CLIP-LoRA
-        template = lora_inference(args, clip_model, crop_tensor, dataset)
-
-        total += 1
-        pred = False
-        if "laying" in template and gt_cls == 0:
-            acertos += 1
-            pred = True
-        elif "standing" in template and gt_cls == 1:
-            acertos += 1
-            pred = True
-
-        print(f"{image_name} - bbox {i}: GT={gt_cls}, {'✓' if pred else 'X'} (IOU={best_iou:.2f})")
+        if best_gt_idx != -1 and best_iou >= 0.3:
+            matched_gt[best_gt_idx] = True
+            gt_cls = gt_boxes[best_gt_idx]["cls_id"]
+            total += 1
+            if int(pred_cls) == gt_cls:
+                acertos += 1
+                print(f"{image_name} - bbox {i}: GT={gt_cls}, Pred={int(pred_cls)} ✓ (IOU={best_iou:.2f})")
+            else:
+                print(f"{image_name} - bbox {i}: GT={gt_cls}, Pred={int(pred_cls)} ✗ (IOU={best_iou:.2f})")
 
 # Resultado final
 acc = acertos / total if total > 0 else 0
-print(f"\nAcurácia CLIP-LoRA nos crops YOLO: {acertos}/{total} = {acc:.2%}")
+print(f"\nAcurácia YOLO: {acertos}/{total} = {acc:.2%}")
 
-# Salvar resultado em JSON (acumula resultados de diferentes scripts)
-result_path = "acuracias_clip_lora.json"
+# Salvar resultado em JSON
+result_path = "acuracias_yolo.json"
 try:
     with open(result_path, "r") as f:
         results = json.load(f)
 except (FileNotFoundError, json.JSONDecodeError):
     results = {}
 
-# Gera chave única para cada script/execução
-key = f"CLIP-LoRA_crops_YOLO_shots{args.shots}_seed{args.seed}"
-results[key] = {
+results["YOLO"] = {
     "acertos": acertos,
     "total": total,
     "acuracia": acc
@@ -151,6 +109,3 @@ results[key] = {
 with open(result_path, "w") as f:
     json.dump(results, f, indent=4)
 print(f"Acurácia salva em {result_path}")
-
-
-#python yolo_clip-lora.py --root_path C:/Users/Pedro/Downloads/DATA --dataset pigs --seed 1 --shots 1 --save_path weights --filename "CLIP-LoRA_pigs"
